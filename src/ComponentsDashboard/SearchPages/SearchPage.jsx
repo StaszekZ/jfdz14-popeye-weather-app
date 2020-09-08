@@ -86,32 +86,61 @@ class SearchPage extends React.Component {
             onChange={this.handleOnChange}
           />
         </Form.Group>
-        <Table striped bordered hover>
-          {Object.keys(cities).map(country => {
-            const list = cities[country];
-            return (
-              <>
-                <tr>
-                  <th>{country}</th>
-                </tr>
-                {list.map((city, index) => {
-                  return (
-                    <tr>
-                      <td>
-                        <Link key={index} to={`search/${city.long}/${city.lat}`}>
-                          {city.name}
-                        </Link>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </>
-            );
-          })}
+        <Table className={style.searchResults} striped bordered hover>
+          <tbody>
+            {Object.keys(cities).map((country, index) => {
+              const list = cities[country];
+              return (
+                <React.Fragment key={index}>
+                  <tr>
+                    <th>{country}</th>
+                  </tr>
+                  {list.map((city, index) => {
+                    return (
+                      <tr key={index}>
+                        <td className={style.list}>
+                          <Link key={index} to={`search/${city.lon}/${city.lat}`}>
+                            {city.name}
+                            <span className={style.temperature}>
+                              {displayCelcius(city.daily[0].temp.day)}
+                            </span>
+                            <span className={style.pressure}>
+                              {displayPressure(city.daily[0].pressure)}
+                            </span>
+                            <span className={style.humidity}>
+                              {displayHumidity(city.daily[0].humidity)}
+                            </span>
+                          </Link>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </React.Fragment>
+              );
+            })}
+          </tbody>
         </Table>
       </AppContent>
     );
   }
+}
+
+const tempFormat = new Intl.NumberFormat('pl-PL');
+export function displayCelcius(temp) {
+  const finalTemp = temp - 272.15;
+
+  return 'T: ' + tempFormat.format(finalTemp) + ' °C'
+}
+
+const pressureFormat = new Intl.NumberFormat('pl-PL');
+export function displayPressure(press) {
+  return 'P: ' + pressureFormat.format(press) + ' hPa';
+}
+
+
+const humidityFormat = new Intl.NumberFormat('pl-PL');
+export function displayHumidity(press) {
+  return 'H: ' +humidityFormat.format(press) + '  %';
 }
 
 const mapStateToProps = state => ({

@@ -8,6 +8,7 @@ import Button from 'react-bootstrap/Button';
 import { getCities } from '../../datasources/cities';
 import { getWeatherForLocation } from '../../datasources/weatherForLocation';
 import { isFavourite, toggleFavourites } from '../../datasources/favourites';
+import { connect } from 'react-redux';
 
 class SearchResultItem extends React.Component {
   state = {
@@ -43,15 +44,19 @@ class SearchResultItem extends React.Component {
   }
 
   get cityDetails() {
-    return getCities().find(city => city.long === this.long && city.lat === this.lat);
+    return getCities().find(
+      city =>
+        city.long.toFixed(2) === this.long.toFixed(2) &&
+        city.lat.toFixed(2) === this.lat.toFixed(2),
+    );
   }
+
   render() {
     const cityDetails = this.cityDetails;
 
-    const weatherData = this.state.weatherData;
+    const weatherData = this.props.weatherData;
     const isFavourite = this.state.isFavourite;
 
-    console.log(this.state);
     return (
       <AppContent>
         {cityDetails && weatherData
@@ -80,13 +85,23 @@ class SearchResultItem extends React.Component {
         </Card>
         <div className={style.metadata}>
           <MetadataEntry name="Temperature">
-            {(weather.temperature - 273.15).toFixed(0)} ℃
+            {(weather.daily[0].temp.day - 273.15).toFixed(0)} ℃
           </MetadataEntry>
-          <MetadataEntry name="Pressure">{(weather.pressure / 100).toFixed(0)} hPa</MetadataEntry>
-          <MetadataEntry name="Humidity">{weather.humidity.toFixed(1)}%</MetadataEntry>
-          <MetadataEntry name="Wind speed">{weather.windSpeed.toFixed(2)} m/s</MetadataEntry>
+          <MetadataEntry name="Feels like">
+            {console.log(weather.daily)}
+            {(weather.daily[0].feels_like.day - 273.15).toFixed(0)} ℃
+          </MetadataEntry>
+          <MetadataEntry name="Dew Point">
+            {(weather.daily[0].dew_point - 273.15).toFixed(0)} ℃
+          </MetadataEntry>
+          <MetadataEntry name="Pressure">{weather.daily[0].pressure.toFixed(0)} hPa</MetadataEntry>
+          <MetadataEntry name="Humidity">{weather.daily[0].humidity.toFixed(1)}%</MetadataEntry>
+          <MetadataEntry name="Wind speed">
+            {weather.daily[0].wind_speed.toFixed(2)} m/s
+          </MetadataEntry>
+          <MetadataEntry name="Wind direction">{weather.daily[0].wind_deg} ° </MetadataEntry>
           <MetadataEntry name="Precipitation">
-            {precipitationDescription(weather.precipitation)}
+            {precipitationDescription(weather.daily[0].weather[0])}
           </MetadataEntry>
         </div>
       </>
@@ -94,18 +109,11 @@ class SearchResultItem extends React.Component {
   }
 }
 
-export function precipitationDescription(type) {
-  switch (parseInt(type, 10)) {
-    case 1:
-      return 'Rain';
-    case 5:
-      return 'Snow';
-    case 6:
-      return 'Wet snow';
-    case 7:
-      return 'Rain with snow';
+export function precipitationDescription(weather) {
+  if (!weather) {
+    return 'No rain';
   }
-  return 'No rain';
+  return weather.description;
 }
 
 export function MetadataEntry(props) {
@@ -118,4 +126,13 @@ export function MetadataEntry(props) {
   );
 }
 
-export default SearchResultItem;
+export default connect((state, props) => {
+  const long = parseFloat(props.match.params.long).toFixed(2);
+  const lat = parseFloat(props.match.params.lat).toFixed(2);
+
+  return {
+    weatherData: state.find(x => {
+      return x.lon.toFixed(2) === long && x.lat.toFixed(2) === lat;
+    }),
+  };
+})(SearchResultItem);

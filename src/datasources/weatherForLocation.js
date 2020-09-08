@@ -1,4 +1,25 @@
-// export function getWeatherForLocation(long, lat) {
+import { APIidNumber } from '../index';
+
+export function getWeatherForLocation(long, lat) {
+  return fetch(
+    `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${long}&exclude=hourly,minutely&appid=${APIidNumber}`,
+  )
+    .then(r => {
+      if (!r.ok) {
+        return 'error';
+      }
+      return r.json();
+    })
+    .then(data => {
+      // console.log(data);
+      return data;
+    });
+}
+
+// if(!r.ok){
+
+// }
+
 //   return fetch('https://api.windy.com/api/point-forecast/v2', {
 //     method: 'POST',
 //     headers: {

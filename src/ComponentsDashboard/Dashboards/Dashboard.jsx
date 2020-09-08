@@ -10,48 +10,62 @@ import {
 import { InvitationMessage } from './InvitationMessage';
 import { AppContent } from './AppContent';
 import Charts from '../Charts/Charts';
+import firebase from 'firebase';
 
-export const Dashboard = () => {
-  return (
-    <>
-      <AppContent>
-        <InvitationMessage
-          message={
-            <div className={style.dashboardInvitation}>
-              Dear User,
-              <br />
-              in our application you can:
-            </div>
-          }
-        />
+class Dashboard extends React.Component {
+  state = {
+    user: null,
+  };
 
-        <div className={style.listElement}>
-          <LocationOnOutlined color="primary" />
-          <span className={style.dashboardMessage}>
-            learn information about weather conditions in your current location
-          </span>
-        </div>
-        <div className={style.listElement}>
-          <SearchOutlined color="primary" />
-          <span className={style.dashboardMessage}>
-            search for different locations and review weather
-          </span>
-        </div>
-        <div className={style.listElement}>
-          <StarBorderOutlined color="primary" />
-          <span className={style.dashboardMessage}>review your favorites locations</span>
-        </div>
-        <div className={style.listElement}>
-          <NotificationsActiveOutlined color="primary" />
-          <span className={style.dashboardMessage}>set your own notifications</span>
-        </div>
-        <div>
-          <h2 className={style.chartsDescription}>Stats</h2>
-          <Charts />
-        </div>
-      </AppContent>
-    </>
-  );
-};
+  componentDidMount = () => {
+    firebase.auth().onAuthStateChanged(user => {
+      console.log(user);
+      this.setState({ user });
+    });
+  };
 
-// export default Dashboard;
+  render() {
+    return (
+      <>
+        <AppContent>
+          <InvitationMessage
+            message={
+              <div className={style.dashboardInvitation}>
+                {`Dear ${this.state.user && this.state.user.email}`}
+                <br />
+                in our application you can:
+              </div>
+            }
+          />
+
+          <div className={style.listElement}>
+            <LocationOnOutlined color="primary" />
+            <span className={style.dashboardMessage}>
+              learn information about weather conditions in your current location
+            </span>
+          </div>
+          <div className={style.listElement}>
+            <SearchOutlined color="primary" />
+            <span className={style.dashboardMessage}>
+              search for different locations and review weather
+            </span>
+          </div>
+          <div className={style.listElement}>
+            <StarBorderOutlined color="primary" />
+            <span className={style.dashboardMessage}>review your favorites locations</span>
+          </div>
+          <div className={style.listElement}>
+            <NotificationsActiveOutlined color="primary" />
+            <span className={style.dashboardMessage}>set your own notifications</span>
+          </div>
+          <div className={style.stats}>
+            <h2 className={style.chartsDescription}>Stats</h2>
+            <Charts />
+          </div>
+        </AppContent>
+      </>
+    );
+  }
+}
+
+export default Dashboard;
